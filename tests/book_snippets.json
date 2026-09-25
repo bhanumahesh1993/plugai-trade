@@ -1,0 +1,132 @@
+[
+ {
+  "file": "ch04.typ",
+  "lang": "bash",
+  "code": "uv tool install plugai-trade\nplugai-trade start\n"
+ },
+ {
+  "file": "ch04.typ",
+  "lang": "bash",
+  "code": "docker run -p 8501:8501 plugai/plugai-trade\n"
+ },
+ {
+  "file": "ch04.typ",
+  "lang": "bash",
+  "code": "docker run -p 8501:8501 -v plugai-data:/data \\\n  -e OLLAMA_HOST=http://host.docker.internal:11434 \\\n  plugai/plugai-trade\n"
+ },
+ {
+  "file": "ch04.typ",
+  "lang": "bash",
+  "code": "plugai-trade lesson 4\n"
+ },
+ {
+  "file": "ch04.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import data\n  nifty = data.get(\"NIFTY\", market=\"IN\", start=\"2026-01-01\", end=\"2026-05-29\")\n  spy   = data.get(\"SPY\",   market=\"US\", start=\"2026-01-01\", end=\"2026-05-29\")\n  print(nifty.tail(3))   # last three synthetic NIFTY bars\n  print(spy.height)      # number of SPY bars loaded\n  "
+ },
+ {
+  "file": "ch04.typ",
+  "lang": "bash",
+  "code": "plugai-trade doctor\n"
+ },
+ {
+  "file": "ch04.typ",
+  "lang": "bash",
+  "code": "plugai-trade update\n"
+ },
+ {
+  "file": "ch05.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import data\n  a = data.get(\"NIFTY\", market=\"IN\", start=\"2026-05-01\",\n               end=\"2026-05-29\", source=\"nse\")\n  b = data.get(\"NIFTY\", market=\"IN\", start=\"2026-05-01\",\n               end=\"2026-05-29\", source=\"yfinance\")\n  diff = data.compare(a, b, tol=0.005)   # rows > 0.5% apart, or missing\n  print(diff)                            # every row keeps its provenance tag\n  "
+ },
+ {
+  "file": "ch05.typ",
+  "lang": "bash",
+  "code": "plugai-trade fetch nse-bhavcopy --date 2026-05-29\nplugai-trade fetch sec-edgar --ticker AAPL\nplugai-trade doctor\n"
+ },
+ {
+  "file": "ch10.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import data, ai\n  import polars as pl\n  bars = data.get(\"NIFTY\", market=\"IN\", start=\"2025-01-01\", end=\"2026-05-29\")\n  bars = bars.with_columns(\n      sma20=pl.col(\"close\").rolling_mean(20),\n      hi20=pl.col(\"high\").rolling_max(20),\n      lo20=pl.col(\"low\").rolling_min(20),\n  )\n  print(bars.tail(3).select(\"date\", \"close\", \"sma20\", \"hi20\", \"lo20\"))\n  ai.explain(bars.tail(60))   # narration with sources; no new numbers\n  "
+ },
+ {
+  "file": "ch11.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import data, backtest, ai\n  bars = data.get(\"NIFTY\", market=\"IN\", start=\"2021-01-01\", end=\"2025-12-31\")\n  spec = backtest.rules(\"Buy at the next open on the first close above the \"\n                        \"50-day average; sell at the next open when the \"\n                        \"close is below the 20-day average\")\n  print(spec.read_back())          # check 1: plain English\n  res = backtest.run(spec, bars, costs=\"IN-equity-delivery\")\n  res.report()                     # the Report Card\n  ai.explain(res)                  # narration with sources\n  "
+ },
+ {
+  "file": "ch18.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import data, backtest\n  bars = data.get(\"NIFTY\", market=\"IN\",\n                  start=\"2011-01-01\", end=\"2025-12-31\")\n  for fast, slow in [(20, 150), (50, 200), (100, 250)]:\n      spec = backtest.rules(\n          f\"Hold while the {fast}-day average is above the \"\n          f\"{slow}-day average; check Fridays; fill next open; \"\n          \"size to 12% volatility, 10% buffer, no borrowing\")\n      res = backtest.run(spec, bars, costs=\"IN-equity-delivery\")\n      res.report()      # every run adds to the trial count\n  "
+ },
+ {
+  "file": "ch22.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import options\n  opt = options.leg(\"NIFTY\", kind=\"call\", strike=25000, expiry=\"weekly\", side=\"buy\")\n  print(opt.tiles())       # the six \"What you're paying for\" tiles\n  print(opt.greeks())      # delta, gamma, theta, vega, per unit and per lot\n  for d in (5, 4, 3, 2, 1):\n      print(d, opt.at(days_left=d).price)    # the Days left slider\n  print(opt.scenario(gap=-300, iv=-3))       # a gap and an IV crush\n  print(options.iv_rank(\"NIFTY\", window=252))\n  "
+ },
+ {
+  "file": "ch23.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import options\n  spec = [(\"put\", 24100, \"buy\"), (\"put\", 24300, \"sell\"),\n          (\"call\", 25400, \"sell\"), (\"call\", 25600, \"buy\")]\n  legs = [options.leg(\"NIFTY\", kind=k, strike=s,\n                      expiry=\"monthly\", side=d) for k, s, d in spec]\n  ic = options.strategy(legs)\n  ic.summary()           # credit, max loss, breakevens, margin\n  ic.stress(gap=-0.05, iv_to=0.24)        # repriced after 1 day\n  ic.attribution(spot=24560, iv=0.15, days=5)\n  "
+ },
+ {
+  "file": "ch26.typ",
+  "lang": "python",
+  "code": "  import numpy as np\n  from plugai_trade import data\n  get = lambda t: data.get(t, market=\"US\")[\"close\"].to_numpy()\n  a, b = get(\"SYN-A\"), get(\"SYN-B\")\n  F = 250                                    # formation sessions\n  beta, alpha = np.polyfit(np.log(b[:F]), np.log(a[:F]), 1)\n  spread = np.log(a) - alpha - beta * np.log(b)\n  z = (spread - spread[:F].mean()) / spread[:F].std(ddof=1)\n  lam = np.polyfit(spread[:F-1], np.diff(spread[:F]), 1)[0]\n  half_life = -np.log(2) / np.log(1 + lam)   # in sessions\n  "
+ },
+ {
+  "file": "ch27.typ",
+  "lang": "python",
+  "code": "import polars as pl\nfrom plugai_trade import plugin\n@plugin.report(title=\"Opening-gap report\", markets=(\"IN\", \"US\"))\ndef gap_report(bars: pl.DataFrame, threshold_pct=0.5):\n    \"\"\"Sessions that opened far from yesterday's close.\"\"\"\n    prev = pl.col(\"close\").shift(1)            # yesterday's close\n    gap = (pl.col(\"open\") / prev - 1) * 100    # gap, in percent\n    filled = (pl.when(gap > 0)\n              .then(pl.col(\"low\") <= prev)     # up: low got back\n              .otherwise(pl.col(\"high\") >= prev))  # down: high did\n    out = bars.with_columns(prev_close=prev, gap_pct=gap,\n                            filled=filled)\n    keep = out.filter(pl.col(\"gap_pct\").abs() >= threshold_pct)\n    return keep.select(\"date\", \"prev_close\", \"open\",\n                       \"gap_pct\", \"filled\")\n"
+ },
+ {
+  "file": "ch27.typ",
+  "lang": "python",
+  "code": "import polars as pl, requests\nfrom plugai_trade import data\n\nKEY = \"kite_7Hq2...9xT\"                        # [4] key in code\nbars = data.get(\"NIFTY\", start=\"2024-06-01\")   # [1] market? end?\nbars = bars.with_columns(\n    gap=pl.col(\"open\") / pl.col(\"close\") - 1,  # [2] TODAY's close\n    ret=pl.col(\"close\") / pl.col(\"open\") - 1)  # open to close\ntrades = bars.filter(pl.col(\"gap\") < -0.005)\nprint(\"Win rate:\", (trades[\"ret\"] > 0).mean())\nprint(\"Average:\", trades[\"ret\"].mean())        # [3] no costs\nrequests.post(\"https://api.broker.example/orders\",   # [4] order\n              headers={\"Authorization\": KEY})\n"
+ },
+ {
+  "file": "ch27.typ",
+  "lang": "python",
+  "code": "import polars as pl\nfrom gap_report.plugin import gap_report\ndef three_sessions():      # hand-made, synthetic NIFTY-like bars\n    return pl.DataFrame({\n        \"date\":  [\"2026-05-26\", \"2026-05-27\", \"2026-05-28\"],\n        \"open\":  [24700.0, 24950.0, 24880.0],\n        \"high\":  [24850.0, 25010.0, 24990.0],\n        \"low\":   [24650.0, 24790.0, 24860.0],\n        \"close\": [24800.0, 24900.0, 24960.0]})\n\ndef test_gap_uses_yesterdays_close():\n    out = gap_report(three_sessions(), threshold_pct=0.5)\n    assert out[\"date\"].to_list() == [\"2026-05-27\"]  # one gap\n    assert round(out[\"gap_pct\"][0], 2) == 0.60   # 24950/24800-1\n    assert out[\"filled\"][0]                      # 24790 <= 24800\n"
+ },
+ {
+  "file": "ch27.typ",
+  "lang": "bash",
+  "code": "plugai-trade plugin test gap_report\n"
+ },
+ {
+  "file": "ch27.typ",
+  "lang": "text",
+  "code": "Manifest ............ ok (report \u00b7 IN, US \u00b7 network: none)\nTests (pytest) ...... 1 passed in 0.16 s\nOrder code .......... none \u2713\nKeys in code ........ none \u2713\nPackages ............ polars, plugai_trade \u2713\nLook-ahead scan ..... no negative shift \u2713\nPlugin check passed: ready to enable.\n"
+ },
+ {
+  "file": "ch28.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import news\n  heads = news.fetch([\"nse-rss\", \"bse-rss\"], market=\"IN\",\n                     start=\"2026-01-01\", end=\"2026-05-29\")\n  fb  = news.score(heads, scorer=\"finbert\")\n  llm = news.score(heads, scorer=\"llm\")        # your local model\n  cmp = news.compare(fb, llm)\n  print(cmp.table())                           # agreement counts\n  cmp.disagreements().head(20)                 # read these yourself\n  "
+ },
+ {
+  "file": "ch28.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import news\n  es = news.event_study(cmp.agreed(\"positive\"), window=(-5, 10),\n                        benchmark=\"NIFTY\", entry=\"tradable_from\",\n                        costs=\"IN-equity-delivery\")\n  es.report()          # average path, bands, cost table, trials\n  "
+ },
+ {
+  "file": "ch29.typ",
+  "lang": "python",
+  "code": "  from plugai_trade import data, ml, ai\n  bars = data.get(\"NIFTY\", market=\"IN\", start=\"2010-01-01\", end=\"2026-05-29\")\n  ds = ml.dataset(bars, label=\"high_vol_next_10\", noise_column=True,\n                  features=[\"range_5\", \"vol_20\", \"vol_5\", \"ret_5\", \"ret_20\",\n                            \"dist_ma50\", \"volume_z\", \"weekday\"])\n  split = ml.time_split(ds, train=0.6, valid=0.2, test=0.2)  # purge = 10\n  model = ml.boosting(split)            # gradient boosting, defaults\n  card = ml.report(model, split, baselines=[\"majority\", \"vol_20 > 1\"])\n  card.show()        # scores vs baselines, importance, overfit curve\n  ai.explain(card)   # narration with sources; no new numbers\n  "
+ },
+ {
+  "file": "ch30.typ",
+  "lang": "toml",
+  "code": "# ~/.plugai-trade/agents/tradingagents.toml  (written by the Agents screen)\n[agent]\nplugin   = \"tradingagents\"        # pinned GitHub tag, not PyPI\nprocess  = \"separate\"\nmodel    = \"local\"                # routed through Settings \u203a AI Models\ntools    = [\"get_bars\", \"get_news\", \"get_filings\", \"run_backtest\"]\nas_of    = \"2026-05-29\"           # data after this date is invisible\nmask_names = true                 # hide tickers and dates from the model\n[budget]\nmax_steps = 40\nmax_cost  = 0.50                  # USD; the run stops, it does not overrun\n[output]\nkind = \"rule_proposal\"            # never an order, never a paper order\n"
+ },
+ {
+  "file": "ch30.typ",
+  "lang": "python",
+  "code": "from plugai_trade import agents, data, backtest, ai\nteam = agents.load(\"tradingagents\", model=\"local\",\n                   as_of=\"2026-05-29\", mask_names=True,\n                   budget={\"max_steps\": 40, \"max_cost\": 0.50})\nprop = team.propose(\"NIFTY\", market=\"IN\")   # a note + rules, never an order\nprint(prop.note)                            # bull, bear and risk sections\nbars = data.get(\"NIFTY\", market=\"IN\", start=\"2016-01-01\", end=\"2026-05-29\")\nres  = backtest.run(prop.rules, bars, costs=\"IN-equity-delivery\")\nres.report()        # Report Card; trials include the agent's own tests\nprint(prop.cost, prop.steps)                # what the run used\nai.explain(res)     # narration with sources\n"
+ },
+ {
+  "file": "ch34.typ",
+  "lang": "bash",
+  "code": "plugai-trade update     # app + dated reference tables\nplugai-trade doctor     # health check: \"matches book edition \u2713\"\n"
+ }
+]

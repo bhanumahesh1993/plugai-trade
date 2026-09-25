@@ -70,7 +70,13 @@ def register(info: SourceInfo) -> None:
     _REGISTRY[info.name] = info
 
 
+ALIASES = {"nse": "nse_bhavcopy", "bse": "bse_bhavcopy", "yahoo": "yfinance", "edgar": "sec_edgar",
+           "sec-edgar": "sec_edgar", "nse-bhavcopy": "nse_bhavcopy", "ccxt": "ccxt_public",
+           "fx": "frankfurter"}
+
+
 def _load(name: str) -> SourceInfo | None:
+    name = ALIASES.get(name, name)
     if name in _REGISTRY:
         return _REGISTRY[name]
     mod = _SOURCE_MODULES.get(name)
@@ -156,7 +162,7 @@ def get(symbol: str, market: str = "IN", start=None, end=None, interval: str = "
     """
     end_d = _to_date(end, date.today())
     start_d = _to_date(start, end_d - timedelta(days=365))
-    order = [source] if source else chain(market, interval)
+    order = [ALIASES.get(source, source)] if source else chain(market, interval)
     errors: list[str] = []
     for name in order:
         if name in ("cache", "eod_replay"):
