@@ -30,6 +30,12 @@ for section, title, module, icon, slug in SCREENS:
     pages.setdefault(section, []).append(st.Page(_runner(module), title=title, icon=icon,
                                                  url_path=slug))
 
+try:  # background jobs run whichever screen is open (idempotent)
+    from plugai_trade import scheduler
+    scheduler.ensure_started()
+except Exception:  # pragma: no cover - never block the UI on the scheduler
+    pass
+
 nav = st.navigation(pages)
 with st.sidebar:
     st.caption(f"PlugAI-Trade {__version__} · paper only · never places real orders")

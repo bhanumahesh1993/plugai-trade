@@ -74,7 +74,7 @@ def line_chart(df: pd.DataFrame, x: str, y: list[str] | str, title: str = "",
         y=alt.Y("value:Q", title=None, scale=alt.Scale(zero=False)),
         color=alt.Color("series:N", legend=alt.Legend(orient="bottom")),
     ).properties(height=height, title=title)
-    st.altair_chart(hypothetical_chart(ch) if hypothetical else ch, use_container_width=True)
+    st.altair_chart(hypothetical_chart(ch) if hypothetical else ch, width="stretch")
 
 
 def candles(df: pd.DataFrame, height: int = 300, levels: list[tuple[float, str]] | None = None) -> None:
@@ -89,7 +89,7 @@ def candles(df: pd.DataFrame, height: int = 300, levels: list[tuple[float, str]]
         layers.append(alt.Chart(lv).mark_rule(strokeDash=[4, 3], color="#7C3AED").encode(y="y:Q"))
         layers.append(alt.Chart(lv).mark_text(align="left", dx=4, dy=-6, color="#7C3AED")
                       .encode(y="y:Q", text="label:N", x=alt.value(0)))
-    st.altair_chart(alt.layer(*layers).properties(height=height), use_container_width=True)
+    st.altair_chart(alt.layer(*layers).properties(height=height), width="stretch")
 
 
 def ai_block(obj: Any, key: str, section: str = "Research", question: str | None = None,

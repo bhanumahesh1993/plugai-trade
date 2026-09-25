@@ -16,10 +16,10 @@ SERVICE = "plugai-trade"
 
 KNOWN = (
     "alpaca_key_id", "alpaca_secret", "upstox_analytics_token", "fyers_app_id", "fyers_token",
-    "angel_api_key", "breeze_api_key", "kite_api_key", "dhan_token", "groww_token",
+    "angel_api_key", "angel_jwt", "breeze_api_key", "kite_api_key", "dhan_token", "groww_token",
     "fred_api_key", "finnhub_api_key", "tiingo_api_key", "massive_api_key",
     "openai_api_key", "anthropic_api_key", "gemini_api_key", "groq_api_key",
-    "openrouter_api_key", "deepseek_api_key", "telegram_bot_token", "exchange_key",
+    "openrouter_api_key", "deepseek_api_key", "telegram_bot_token", "smtp_password", "exchange_key",
 )
 
 FORBIDDEN_PERMISSIONS = ("trade", "withdraw", "transfer", "order")
@@ -42,6 +42,8 @@ def set_key(name: str, value: str, permissions: list[str] | None = None) -> None
     perms = [p.lower() for p in (permissions or [])]
     bad = [p for p in perms if any(f in p for f in FORBIDDEN_PERMISSIONS)]
     if bad:
+        from .store import default as _store
+        _store().audit("key_refused", {"name": name, "permissions": bad})
         raise KeyRefused(
             f"Refused: this key allows {', '.join(bad)}. PlugAI-Trade only needs read-only keys."
         )

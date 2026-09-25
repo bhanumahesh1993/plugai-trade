@@ -1,0 +1,5 @@
+Stock name,Symbol,ISIN,Type,Quantity,Value,Exchange,Exchange Order Id,Execution date and time,Order status
+Tata Motors,TATAMOTORS,INE155A01022,BUY,20,14000,NSE,G1,08-09-2026 09:40:00,Executed
+Tata Motors,TATAMOTORS,INE155A01022,SELL,20,14200,NSE,G2,08-09-2026 14:10:00,Executed
+Infosys,INFY,INE009A01021,BUY,5,7500,NSE,G3,01-09-2026 10:00:00,Executed
+Infosys,INFY,INE009A01021,SELL,5,7800,NSE,G4,10-09-2026 11:00:00,Executed

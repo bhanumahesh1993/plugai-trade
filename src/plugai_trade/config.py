@@ -64,7 +64,13 @@ DEFAULTS: dict[str, Any] = {
         "live_stream": False,
         "edgar_contact": "",
     },
-    "paper": {"daily_loss_limit": 0.0, "max_trades_per_day": 0, "cooldown_minutes": 0},
+    "paper": {"daily_loss_limit": 0.0, "max_trades_per_day": 0, "cooldown_minutes": 0,
+              "trading_window": "", "one_r": 0.0, "daily_loss_limit_by_market": {},
+              "events": [], "event_lockout_minutes": 0},
+    "alerts": {"quiet_hours": "", "channels": ["Desktop"]},
+    "mcp": {"paper_order_enabled": True},
+    "scheduler": {"paused": False, "catch_up": True, "health_alert": False},
+    "news": {"aliases": {}},
     "workspace": {"template": "", "pinned": []},
 }
 

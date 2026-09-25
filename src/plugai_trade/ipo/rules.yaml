@@ -1,0 +1,21 @@
+# Dated IPO rules used by the SME checker and the Lock-in calendar.
+# Move to reference/tables.yaml (india.ipo) when the core table adds them; the
+# lab reads reference first and falls back to this file. Confirm before relying on it.
+as_of: "2026-09-24"
+sme:
+  effective_from: "2025-04-01"
+  source: "SEBI SME IPO framework (draft offer documents filed from 1 Apr 2025)"
+  rules:
+    - {id: ebitda, text: "Operating profit (EBITDA) of at least ₹1 crore in two of the last three financial years", min_cr: 1.0, years_needed: 2}
+    - {id: ofs_cap, text: "Offer for sale at most 20% of the issue", max_pct: 20.0}
+    - {id: seller_cap, text: "Selling shareholders sell at most 50% of their holding", max_pct: 50.0}
+    - {id: min_lots, text: "Minimum application of two lots (about ₹2 lakh or more)", min_lots: 2}
+lock_in:
+  source: "SEBI ICDR lock-in periods (mainboard)"
+  mainboard:
+    - {holder: "Anchors, first half", days: 30, share: 0.5, of: anchor}
+    - {holder: "Anchors, second half", days: 90, share: 0.5, of: anchor}
+    - {holder: "Pre-IPO holders", days: 180, of: pre_ipo}
+    - {holder: "Promoters above minimum", days: 180, of: promoter_excess}
+    - {holder: "Promoter minimum contribution (20%)", days: 540, of: promoter_min}
+post_listing_review_days: 30

@@ -61,6 +61,10 @@ def bars(symbol: str, start: date, end: date, vol: float = 0.011, drift: float =
 
 
 def _fetch(symbol: str, market: str, start: date, end: date, interval: str = "1d") -> pl.DataFrame:
+    if symbol.upper() in ("SYN-A", "SYN-B", "SYN-C", "SYN-D") and interval == "1d":
+        # The book's cointegrated / broken teaching pairs (Chapter 26).
+        from ..pairs.sample import bars as pair_bars
+        return pair_bars(symbol.upper(), start, end)
     if interval != "1d":
         return intraday(symbol, end, interval)
     return bars(symbol, start, end)

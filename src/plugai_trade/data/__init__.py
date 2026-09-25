@@ -110,15 +110,24 @@ def _to_date(d: str | date | datetime | None, default: date) -> date:
 
 
 def normalise(df: pl.DataFrame, source: str, license_class: str) -> pl.DataFrame:
-    """Coerce a source's frame to the house schema and stamp provenance."""
+    """Coerce a source's frame to the house schema and stamp provenance.
+
+    Daily frames keep one row per date. Intraday frames (with a ``time`` column)
+    keep one row per timestamp.
+    """
+    intraday = "time" in df.columns
     if df.is_empty():
-        return pl.DataFrame(schema={**{c: pl.Float64 for c in COLUMNS}, "date": pl.Date,
-                                    "source": pl.Utf8, "fetched_at": pl.Utf8,
-                                    "license_class": pl.Utf8})
-    out = df.select(
-        pl.col("date").cast(pl.Date),
-        *[pl.col(c).cast(pl.Float64) for c in COLUMNS[1:]],
-    ).sort("date").unique("date", keep="last").sort("date")
+        schema = {"date": pl.Date, **{c: pl.Float64 for c in COLUMNS[1:]},
+                  "source": pl.Utf8, "fetched_at": pl.Utf8, "license_class": pl.Utf8}
+        if intraday:
+            schema["time"] = pl.Utf8
+        return pl.DataFrame(schema=schema)
+    key = "time" if intraday else "date"
+    cols = [pl.col("date").cast(pl.Date)]
+    if intraday:
+        cols.append(pl.col("time").cast(pl.Utf8))
+    cols += [pl.col(c).cast(pl.Float64) for c in COLUMNS[1:] if c in df.columns]
+    out = df.select(cols).sort(key).unique(key, keep="last").sort(key)
     stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     return out.with_columns(pl.lit(source).alias("source"), pl.lit(stamp).alias("fetched_at"),
                             pl.lit(license_class).alias("license_class"))
@@ -154,7 +163,7 @@ def chain(market: str, interval: str = "1d") -> list[str]:
 
 
 def get(symbol: str, market: str = "IN", start=None, end=None, interval: str = "1d",
-        source: str | None = None, use_cache: bool = True) -> pl.DataFrame:
+        source: str | None = None, use_cache: bool = True, fallback: bool = True) -> pl.DataFrame:
     """Daily (or intraday) bars with provenance, from the first source that works.
 
     ``source="synthetic"`` always works offline. When nothing live works, the
@@ -183,16 +192,22 @@ def get(symbol: str, market: str = "IN", start=None, end=None, interval: str = "
             errors.append(f"{name}: no rows")
             continue
         df = normalise(raw, name, info.license_class)
-        if use_cache and name != "synthetic":
+        has_prices = "close" in df.columns and df["close"].null_count() < df.height
+        if use_cache and name != "synthetic" and has_prices and interval == "1d":
             _cache_write(df, symbol, market, interval)
         return df
-    if source is None and market in ("IN", "US"):
-        # Last resort so every lesson still runs offline.
+    if fallback and market in ("IN", "US"):
+        # Last resort so every lesson still runs offline. The source column says so.
+        import warnings
         from . import synthetic  # noqa: F401
+        why = "; ".join(errors) or "no source configured"
+        warnings.warn(f"{symbol}: live sources unavailable ({why}) — using synthetic data",
+                      stacklevel=2)
+        tag = "synthetic" if source is None else f"synthetic (fallback for {source})"
         return normalise(_REGISTRY["synthetic"].fetch(symbol=symbol, market=market,
                                                       start=start_d, end=end_d,
                                                       interval=interval),
-                         "synthetic", "public")
+                         tag, "public")
     raise DataUnavailable(f"No source returned {symbol} ({market}). Tried: " + "; ".join(errors))
 
 

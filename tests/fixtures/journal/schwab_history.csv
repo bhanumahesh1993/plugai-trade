@@ -1,0 +1,4 @@
+Date,Action,Symbol,Description,Quantity,Price,Fees & Comm,Amount
+09/08/2026,Buy,QQQ,INVESCO QQQ TRUST,50,$480.00,$0.00,-$24000.00
+09/08/2026,Sell,QQQ,INVESCO QQQ TRUST,50,$482.50,$0.73,$24124.27
+09/09/2026,Qualified Dividend,QQQ,INVESCO QQQ TRUST,,,,$12.00

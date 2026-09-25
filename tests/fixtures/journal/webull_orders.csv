@@ -1,0 +1,4 @@
+Name,Symbol,Side,Status,Filled,Total Qty,Price,Avg Price,Time-in-Force,Placed Time,Filled Time
+SPDR S&P 500,SPY,Buy,Filled,30,30,561.00,561.00,DAY,09/08/2026 09:50:00 EDT,09/08/2026 09:50:02 EDT
+SPDR S&P 500,SPY,Sell,Filled,30,30,559.50,559.50,DAY,09/08/2026 11:10:00 EDT,09/08/2026 11:10:01 EDT
+SPDR S&P 500,SPY,Buy,Cancelled,0,30,555.00,,DAY,09/08/2026 12:00:00 EDT,

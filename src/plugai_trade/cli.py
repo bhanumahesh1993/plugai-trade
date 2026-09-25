@@ -72,8 +72,12 @@ def fetch(source: str = typer.Argument(..., help="e.g. nse-bhavcopy, sec-edgar, 
     """Download one data file or series into the local cache."""
     from . import data
     name = source.replace("-", "_")
-    df = data.get(ticker or "NIFTY", market=market, start=date or None, end=date or None,
-                  source=name)
+    try:
+        df = data.get(ticker or "NIFTY", market=market, start=date or None, end=date or None,
+                      source=name, fallback=False)
+    except data.DataUnavailable as exc:
+        typer.echo(f"{name}: {exc}")
+        raise typer.Exit(1)
     typer.echo(f"{name}: {df.height} rows · licence {df['license_class'][0] if df.height else '-'}")
 
 

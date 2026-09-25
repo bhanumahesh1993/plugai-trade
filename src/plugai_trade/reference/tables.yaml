@@ -15,6 +15,11 @@ india:
     MIDCPNIFTY: {lot: 120, expiry: "last Tuesday (monthly)", exchange: NSE, settlement: cash, effective_from: "2026-01-01", source: "NSE lot revision"}
     SENSEX:     {lot: null, expiry: "Thursday (weekly)", exchange: BSE, settlement: cash, note: "Exchange-set; check the Contract Table", source: "BSE"}
     USDINR:     {lot_usd: 1000, expiry: "monthly", exchange: NSE, settlement: cash, exposure_required: true, source: "NSE / RBI"}
+    CRUDEOIL:   {lot: 100, unit: bbl, exchange: MCX, settlement: cash, source: "MCX contract specs †"}
+    CRUDEOILM:  {lot: 10, unit: bbl, exchange: MCX, settlement: cash, source: "MCX contract specs †"}
+    GOLD:       {lot: 1000, unit: gram, exchange: MCX, settlement: "delivery †", source: "MCX contract specs †"}
+  margin_model: {price_range: 0.08, price_steps: 3, vol_shift: 0.04, horizon_days: 1, exposure_pct: 0.02, expiry_day_elm_pct: 0.02, note: "PlugAI-Trade lab estimate, not exchange SPAN"}
+  holidays: []   # exchange trading holidays (YYYY-MM-DD); `plugai-trade update` fills this
   min_index_derivative_contract_inr: 1500000
   charges:  # per side unless stated; percentages as fractions
     brokerage_per_order: 20.0
@@ -35,6 +40,13 @@ india:
     ltcg_exemption_inr: 125000
     vda_rate: 0.30
     vda_tds: 0.01
+    vda_tds_threshold_inr: 10000   # ₹50,000 for specified persons
+    cess: 0.04
+    audit_threshold_inr: 10000000
+    presumptive_rate_digital: 0.06
+    presumptive_lock_in_years: 5
+    advance_tax_min_liability_inr: 10000
+    ltcg_holding_months_listed_equity: 12
     audit_threshold_digital_inr: 100000000
     carry_forward_years: {speculative: 4, non_speculative: 8, capital: 8}
     advance_tax: [["06-15", 0.15], ["09-15", 0.45], ["12-15", 0.75], ["03-15", 1.00]]
@@ -54,6 +66,13 @@ us:
     NDX: {multiplier: 100, style: European, settlement: cash, sec_1256: true}
     MES: {multiplier: 5, expiry: "quarterly (Mar/Jun/Sep/Dec) †", sec_1256: true}
     MNQ: {multiplier: 2, expiry: "quarterly †", sec_1256: true}
+    ES:  {multiplier: 50, expiry: "quarterly (Mar/Jun/Sep/Dec)", sec_1256: true}
+    CL:  {multiplier: 1000, unit: bbl, sec_1256: true}
+    MCL: {multiplier: 100, unit: bbl, sec_1256: true}
+    MGC: {multiplier: 10, unit: oz, sec_1256: true}
+    M6E: {contract_size: 12500, currency: EUR, sec_1256: true, source: "CME micro EUR/USD †"}
+  crypto_fees: {maker: 0.0002, taker: 0.0005, note: "typical perp venue fees; varies by exchange †"}
+  margin_model: {naked_pct: 0.20, naked_min_pct: 0.10, note: "Reg-T style estimate; broker minimums vary"}
   charges:
     commission_per_trade: 0.0
     options_contract_fee: 0.65   # typical broker fee, varies
@@ -63,8 +82,17 @@ us:
     long_term: [0.0, 0.15, 0.20]
     niit: 0.038
     wash_sale_days: 30
+    long_term_days: 365
+    sec_1256_index_options: [SPX, XSP, NDX, RUT, VIX, OEX, DJX]
+    sec_1256_futures_roots: [ES, MES, NQ, MNQ, RTY, M2K, YM, MYM, CL, MCL, GC, MGC]
+    equity_option_etfs: [SPY, QQQ, IWM, DIA, GLD, TLT]
     wash_sale_covers_crypto: false
     loss_deduction_cap: 3000
     sec_1256_split: [0.60, 0.40]
   rules:
     pdt_removed: {approved: "2026-04-14", effective: "2026-06-04", broker_phase_in_until: "2027-10-20"}
+
+agents:
+  pins:  # official GitHub tags installed by Automate › Plugins › Install (never PyPI forks)
+    tradingagents: v0.5.1      # TauricResearch/TradingAgents, released 2026-09-24
+    ai-hedge-fund: v2026.7.10  # virattt/ai-hedge-fund

@@ -106,8 +106,17 @@ def status() -> dict[str, Any]:
             "budget": ai.get("monthly_budget", 5.0)}
 
 
+def ollama_host() -> str:
+    """OLLAMA_HOST (set by the Docker command) wins over the saved setting."""
+    import os
+    return os.environ.get("OLLAMA_HOST") or config.get("ai.ollama_host", "http://localhost:11434")
+
+
 def ollama_ok(timeout: float = 1.5) -> bool:
-    host = config.get("ai.ollama_host", "http://localhost:11434")
+    import os
+    if os.environ.get("PLUGAI_TRADE_OFFLINE") == "1":
+        return False
+    host = ollama_host()
     try:
         return httpx.get(f"{host}/api/tags", timeout=timeout).status_code == 200
     except Exception:
@@ -115,12 +124,26 @@ def ollama_ok(timeout: float = 1.5) -> bool:
 
 
 def ollama_models() -> list[str]:
-    host = config.get("ai.ollama_host", "http://localhost:11434")
+    host = ollama_host()
     try:
         r = httpx.get(f"{host}/api/tags", timeout=3)
         return [m["name"] for m in r.json().get("models", [])]
     except Exception:
         return []
+
+
+_cloud_ok_once: dict[str, bool] = {}
+
+
+def allow_cloud_once(section: str) -> None:
+    """The user confirmed the "Ask before sending to cloud" preview for this call."""
+    _cloud_ok_once[section] = True
+
+
+def cloud_preview(prompt: str) -> str:
+    """Exactly what a cloud call would send (identifiers stripped when enabled)."""
+    from .. import privacy
+    return privacy.cloud_payload(prompt)
 
 
 def _choose(section: str, sensitive: bool) -> tuple[str, str]:
@@ -131,7 +154,15 @@ def _choose(section: str, sensitive: bool) -> tuple[str, str]:
         local = ai.get("journal_model") or local
     policy = ai.get("use_for", {}).get(section, "Local only")
     clouds = ai.get("cloud_models") or []
-    if sensitive or policy != "Cloud allowed" or not clouds:
+    try:
+        from .. import privacy
+        forced_local = section in privacy.local_only_sections()
+        ask_first = privacy.settings().ask_before_cloud
+    except Exception:
+        forced_local, ask_first = False, True
+    if ask_first and not _cloud_ok_once.pop(section, False):
+        return "Local", local
+    if sensitive or forced_local or policy != "Cloud allowed" or not clouds:
         return "Local", local
     if _month_spend() >= float(ai.get("monthly_budget", 5.0)):
         return "Local", local
@@ -139,7 +170,7 @@ def _choose(section: str, sensitive: bool) -> tuple[str, str]:
 
 
 def _ollama_chat(model: str, system: str, prompt: str, schema: dict | None) -> str:
-    host = config.get("ai.ollama_host", "http://localhost:11434")
+    host = ollama_host()
     body: dict[str, Any] = {"model": model, "stream": False,
                             "messages": [{"role": "system", "content": system},
                                          {"role": "user", "content": prompt}],
@@ -176,7 +207,7 @@ def complete(prompt: str, section: str = "Research", system: str = SYSTEM,
     text, cost = "", 0.0
     try:
         if where == "Cloud":
-            text, cost = _cloud_chat(model, system, prompt, schema)
+            text, cost = _cloud_chat(model, system, cloud_preview(prompt), schema)
         else:
             text = _ollama_chat(model, system, prompt, schema)
     except Exception as exc:
