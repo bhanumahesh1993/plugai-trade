@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from "echarts-for-react/esm/core";
+import { echarts } from "@/lib/echarts";
 import {
   AreaSeries, CandlestickSeries, ColorType, CrosshairMode, LineSeries,
-  createChart, type IChartApi, type Time,
+  createChart, createSeriesMarkers, type IChartApi, type SeriesMarker, type Time,
 } from "lightweight-charts";
 import { useTheme } from "./theme";
 
@@ -72,11 +73,11 @@ export function PayoffChart({ spot, expiry, now, current, band, breakevens, mone
   };
   return (
     <div>
-      <ReactECharts option={option} notMerge style={{ height: 340, width: "100%" }} key={theme} />
+      <ReactEChartsCore echarts={echarts} option={option} notMerge style={{ height: 340, width: "100%" }} key={theme} />
       <div className="mt-1 flex flex-wrap gap-x-5 gap-y-1 pl-16 text-[13px] text-muted">
         <span className="flex items-center gap-1.5"><i className="inline-block h-3 w-0 border-l border-dashed border-muted" /> Spot {Math.round(current).toLocaleString()}</span>
         {breakevens.map((b) => (
-          <span key={b} className="flex items-center gap-1.5 text-indigo"><i className="inline-block h-3 w-0.5 bg-indigo" /> Breakeven {Math.round(b).toLocaleString()}</span>
+          <span key={b} className="flex items-center gap-1.5 text-indigo"><i className="inline-block h-3 w-0.5 bg-indigo" /> Breakeven {b.toLocaleString(undefined, { maximumFractionDigits: Number.isInteger(Math.round(b * 100) / 100) ? 0 : 2 })}</span>
         ))}
         <span className="flex items-center gap-1.5"><i className="inline-block h-3 w-3 rounded-[2px] bg-indigo/15" /> ±1σ expected move</span>
       </div>
@@ -110,7 +111,10 @@ function useLwChart(build: (chart: IChartApi, t: ReturnType<typeof tokens>) => v
   return ref;
 }
 
-export function CandleChart({ bars, height = 300 }: { bars: { date?: string; time?: string; open: number; high: number; low: number; close: number }[]; height?: number }) {
+/** A point to mark on a candle chart: a fill, a signal, a level touch. */
+export interface ChartMark { at: string; side: "buy" | "sell" | "note"; text?: string }
+
+export function CandleChart({ bars, height = 300, marks = [] }: { bars: { date?: string; time?: string; open: number; high: number; low: number; close: number }[]; height?: number; marks?: ChartMark[] }) {
   const ref = useLwChart((chart, t) => {
     const s = chart.addSeries(CandlestickSeries, { upColor: t.bull, downColor: t.bear, borderVisible: false,
       wickUpColor: t.bull, wickDownColor: t.bear });
@@ -120,7 +124,18 @@ export function CandleChart({ bars, height = 300 }: { bars: { date?: string; tim
     s.setData(bars.map((b) => ({
       time: (b.time ? Math.floor(Date.parse(b.time + "Z") / 1000) : b.date) as Time,
       open: b.open, high: b.high, low: b.low, close: b.close })));
-  }, [bars]);
+    if (marks.length) {
+      const toTime = (at: string) => (at.includes("T") ? Math.floor(Date.parse(at.slice(0, 16) + "Z") / 1000) : at) as Time;
+      const ms: SeriesMarker<Time>[] = marks.map((m) => ({
+        time: toTime(m.at),
+        position: m.side === "sell" ? "aboveBar" : "belowBar",
+        shape: m.side === "buy" ? "arrowUp" : m.side === "sell" ? "arrowDown" : "circle",
+        color: m.side === "buy" ? t.bull : m.side === "sell" ? t.bear : t.indigo,
+        text: m.text,
+      }));
+      createSeriesMarkers(s, ms.sort((a, b) => (a.time > b.time ? 1 : -1)));
+    }
+  }, [bars, marks]);
   return <div ref={ref} style={{ height }} className="w-full" />;
 }
 

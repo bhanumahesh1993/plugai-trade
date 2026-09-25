@@ -24,3 +24,15 @@ def test_backtest_and_paper():
 
 def test_spa_fallback():
     assert c.get("/options").status_code in (200, 404)
+
+
+def test_explain_forces_local_for_personal_sections(monkeypatch):
+    seen = {}
+    import plugai_trade.ai as ai_mod
+
+    def fake(obj, q=None, section="Research", sensitive=False):
+        seen["sensitive"] = sensitive
+        return ai_mod.Explanation(text="ok", sources=[])
+    monkeypatch.setattr(ai_mod, "explain", fake)
+    c.post("/api/explain", json={"facts": ["Net: 1"], "section": "Tax"})
+    assert seen["sensitive"] is True

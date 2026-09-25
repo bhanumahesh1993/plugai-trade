@@ -218,7 +218,7 @@ def _hedge(mkt: str, d: dict) -> None:
                                key="hd_risk")
     dist = c2.number_input("Stop distance (price)", 0.0001, 10.0, 0.0055, 0.0005, format="%.4f",
                            key="hd_dist")
-    csize = float(reference.lookup("us.contracts.M6E.multiplier") or 0)
+    csize = float(reference.lookup("us.contracts.M6E.contract_size") or 0)
     size = c3.number_input("Contract size (units)", 0.0, 1e7, csize, 500.0, key="hd_cs",
                            help="From Derivatives › Contract Table")
     if not csize:

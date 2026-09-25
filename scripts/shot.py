@@ -20,10 +20,19 @@ with sync_playwright() as p:
     page.add_init_script(f"localStorage.setItem('plugai-theme', '{'desk' if dark else 'book'}')")
     page.goto(url, wait_until="networkidle")
     for text in clicks:
-        page.get_by_role("button", name=text, exact=True).first.click()
+        target = page.get_by_role("button", name=text, exact=True)
+        if target.count() == 0:
+            target = page.get_by_role("tab", name=text, exact=True)
+        if target.count() == 0:
+            target = page.get_by_role("radio", name=text, exact=True)
+        target.first.click()
         page.wait_for_load_state("networkidle")
         page.wait_for_timeout(700)
     page.wait_for_timeout(500)
+    # The app scrolls inside <main>; grow the viewport to the content so nothing is cut off.
+    h = page.evaluate("() => { const m = document.querySelector('main'); return m ? m.scrollHeight + 80 : 900 }")
+    page.set_viewport_size({"width": 1440, "height": max(900, min(int(h), 6000))})
+    page.wait_for_timeout(300)
     page.screenshot(path=out, full_page=True)
     browser.close()
 print("saved", out)

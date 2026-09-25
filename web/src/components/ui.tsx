@@ -28,7 +28,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLBut
 Button.displayName = "Button";
 
 /** Panels are the page's structure; tiles (FactTile) are the data. Different radius on purpose. */
-export function Panel({ title, action, className, children, ...rest }: HTMLAttributes<HTMLElement> & { title?: ReactNode; action?: ReactNode }) {
+export function Panel({ title, action, className, children, ...rest }: Omit<HTMLAttributes<HTMLElement>, "title"> & { title?: ReactNode; action?: ReactNode }) {
   return (
     <section className={cn("rounded-[var(--radius-panel)] border border-line bg-panel", className)} {...rest}>
       {(title || action) && (

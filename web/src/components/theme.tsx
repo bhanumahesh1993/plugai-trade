@@ -12,7 +12,15 @@ function initial(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(initial);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    const t = initial();
+    document.documentElement.dataset.theme = t; // before first paint, so charts read the right tokens
+    return t;
+  });
+  const setTheme = (t: Theme) => {
+    document.documentElement.dataset.theme = t; // synchronously: charts re-read CSS vars on this render
+    setThemeState(t);
+  };
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     try { localStorage.setItem("plugai-theme", theme); } catch { /* ignore */ }

@@ -9,7 +9,7 @@ import { Button } from "./ui";
  * The design's one memorable idea: every AI sentence cites numbered facts, and
  * hovering a citation lights the tile that fact came from.
  */
-const LitCtx = createContext<{ lit: string | null; setLit: (k: string | null) => void }>({ lit: null, setLit: () => {} });
+export const LitCtx = createContext<{ lit: string | null; setLit: (k: string | null) => void }>({ lit: null, setLit: () => {} });
 
 export function FactsProvider({ children }: { children: ReactNode }) {
   const [lit, setLit] = useState<string | null>(null);
@@ -64,14 +64,16 @@ function Cited({ text, sources }: { text: string; sources: string[] }) {
   );
 }
 
-export function ExplainPanel({ facts, section, question, onAccept }: {
+export function ExplainPanel({ facts, section, question, onAccept, sensitive = false }: {
   facts: string[]; section: string; question?: string; onAccept?: (text: string) => void;
+  /** Personal data (journal, holdings, tax): always the local model. */
+  sensitive?: boolean;
 }) {
   const [showSources, setShowSources] = useState(false);
-  const explain = useMutation({ mutationFn: () => post<Explanation>("/api/explain", { facts, section, question }) });
+  const explain = useMutation({ mutationFn: () => post<Explanation>("/api/explain", { facts, section, question, sensitive }) });
   const second = useMutation({
     mutationFn: () => post<Explanation>("/api/explain", {
-      facts, section,
+      facts, section, sensitive,
       question: `Assume this answer is wrong and find the error. Check every claim against the facts:\n${explain.data?.text ?? ""}`,
     }),
   });
@@ -108,4 +110,15 @@ export function ExplainPanel({ facts, section, question, onAccept }: {
       )}
     </div>
   );
+}
+
+/** Current citation key (lower-cased text before ":" in a fact). */
+export const useLit = () => useContext(LitCtx).lit;
+
+/** Wrap any row or line so a citation hover lights it like a tile.
+ *  `label` must equal the text before ":" in the engine fact it shows. */
+export function CiteTarget({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+  const { lit } = useContext(LitCtx);
+  const on = lit !== null && lit === label.toLowerCase();
+  return <div className={cn("tile rounded-[6px]", on && "tile-lit", className)}>{children}</div>;
 }

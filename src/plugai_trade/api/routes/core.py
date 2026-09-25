@@ -78,6 +78,11 @@ class ExplainIn(BaseModel):
     facts: list[str]
     question: str | None = None
     section: str = "Research"
+    sensitive: bool = False
+
+
+# Personal data never leaves the machine through this endpoint, whatever the caller asks.
+SENSITIVE_SECTIONS = {"Journal", "Portfolio", "Tax", "Paper Trading"}
 
 
 @router.post("/api/explain")
@@ -85,7 +90,8 @@ def explain(body: ExplainIn) -> dict[str, Any]:
     class _F:
         def facts(self_inner):
             return body.facts
-    out = ai.explain(_F(), body.question, section=body.section)
+    sensitive = body.sensitive or body.section in SENSITIVE_SECTIONS
+    out = ai.explain(_F(), body.question, section=body.section, sensitive=sensitive)
     return {"text": out.text, "sources": out.sources, "model": out.model, "where": out.where,
             "blocked": out.blocked}
 

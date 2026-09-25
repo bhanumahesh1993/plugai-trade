@@ -3,7 +3,8 @@ import * as SwitchPrimitive from "@radix-ui/react-switch";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { createContext, useCallback, useContext, useState, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 import { AlertTriangle, Info, X, CheckCircle2 } from "lucide-react";
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from "echarts-for-react/esm/core";
+import { echarts } from "@/lib/echarts";
 import { cn } from "@/lib/cn";
 import { inputCls } from "./ui";
 import { useTheme } from "./theme";
@@ -166,9 +167,25 @@ export const useToast = () => useContext(ToastCtx);
 
 /* ------------------------------------------------------------ generic chart */
 /** Any ECharts option, themed. Colours: read CSS vars via chartTokens(). */
+const FONT = "IBM Plex Sans";
+/** Put the UI font on every text element ECharts would otherwise render in its default serif. */
+function withFont(o: unknown): unknown {
+  if (Array.isArray(o)) return o.map(withFont);
+  if (!o || typeof o !== "object") return o;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(o as Record<string, unknown>)) {
+    out[k] = withFont(v);
+    if (/^(textStyle|axisLabel|nameTextStyle|label)$/.test(k) && v && typeof v === "object" && !Array.isArray(v)) {
+      out[k] = { fontFamily: FONT, ...(withFont(v) as object) };
+    }
+  }
+  return out;
+}
+
 export function EChart({ option, height = 280 }: { option: Record<string, unknown>; height?: number }) {
   const { theme } = useTheme();
-  return <ReactECharts option={{ animation: false, textStyle: { fontFamily: "IBM Plex Sans" }, ...option }} notMerge style={{ height, width: "100%" }} key={theme} />;
+  const opt = withFont({ animation: false, ...option, textStyle: { fontFamily: FONT, ...(option.textStyle as object ?? {}) } }) as Record<string, unknown>;
+  return <ReactEChartsCore echarts={echarts} option={opt} notMerge style={{ height, width: "100%" }} key={theme} />;
 }
 export function chartTokens() {
   const s = getComputedStyle(document.documentElement);
