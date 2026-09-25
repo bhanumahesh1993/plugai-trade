@@ -28,7 +28,7 @@ def scan_path(root: Path) -> list[tuple[str, int, str]]:
     for f in root.rglob("*.py"):
         if f.name in _SELF or "tests" in f.parts:
             continue
-        for i, line in enumerate(f.read_text(errors="ignore").splitlines(), 1):
+        for i, line in enumerate(f.read_text(errors="ignore", encoding="utf-8").splitlines(), 1):
             if _RX.search(line):
                 hits.append((str(f), i, line.strip()[:120]))
     return hits

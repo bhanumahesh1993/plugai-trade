@@ -103,10 +103,10 @@ def test_uninstalled_plugin_falls_back_with_warning():
 def test_config_file_matches_the_book():
     p = agents.write_config("tradingagents", as_of="2026-05-29")
     assert p.name == "tradingagents.toml" and p.parent.name == "agents"
-    cfg = tomllib.loads(p.read_text())
-    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+    cfg = tomllib.loads(p.read_text(encoding="utf-8"))
+    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
     assert cfg == tomllib.loads(snips[23]["code"])
-    assert p.read_text().splitlines()[2] == snips[23]["code"].splitlines()[2]
+    assert p.read_text(encoding="utf-8").splitlines()[2] == snips[23]["code"].splitlines()[2]
 
 
 def test_send_to_builder_and_reject():
@@ -120,7 +120,7 @@ def test_send_to_builder_and_reject():
 
 
 def test_book_snippet_24_runs_offline(capsys):
-    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
     code = textwrap.dedent(snips[24]["code"])
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

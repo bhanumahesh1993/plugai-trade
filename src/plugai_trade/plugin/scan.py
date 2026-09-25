@@ -69,7 +69,7 @@ def _lines(folder: Path, files: list[Path]) -> list[tuple[str, int, str]]:
     out = []
     for f in files:
         rel = str(f.relative_to(folder))
-        for i, line in enumerate(f.read_text(errors="ignore").splitlines(), 1):
+        for i, line in enumerate(f.read_text(errors="ignore", encoding="utf-8").splitlines(), 1):
             code = line.split("#", 1)[0] if not line.lstrip().startswith("#") else ""
             out.append((rel, i, code))
     return out
@@ -110,7 +110,7 @@ def imports(folder: Path, tests: bool) -> dict[str, list[tuple[str, int]]]:
         if is_test(folder, f) != tests:
             continue
         try:
-            tree = ast.parse(f.read_text(errors="ignore"))
+            tree = ast.parse(f.read_text(errors="ignore", encoding="utf-8"))
         except SyntaxError as exc:
             out.setdefault("<syntax error>", []).append((str(f.relative_to(folder)), exc.lineno or 0))
             continue

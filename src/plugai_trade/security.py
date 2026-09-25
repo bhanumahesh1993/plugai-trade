@@ -40,7 +40,7 @@ class Item:
 
 # ---------------------------------------------------------------- checklist
 def _keys_in_keychain() -> Item:
-    settings_text = config.path("settings.json").read_text() if config.path(
+    settings_text = config.path("settings.json").read_text(encoding="utf-8") if config.path(
         "settings.json").exists() else ""
     leaked = [n for n in keys.listed() if (v := keys.get_key(n)) and len(v) > 6
               and v in settings_text]

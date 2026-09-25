@@ -21,7 +21,7 @@ def no_model(monkeypatch):
 
 
 def _snippet(i: int) -> str:
-    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
     return textwrap.dedent(snips[i]["code"])
 
 

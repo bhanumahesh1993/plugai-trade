@@ -82,7 +82,7 @@ max_cost  = {float(max_cost):.2f}                # USD; the run stops, it does n
 kind = "rule_proposal"            # never an order, never a paper order
 """
     p = config_path(plugin)
-    p.write_text(text)
+    p.write_text(text, encoding="utf-8")
     return p
 
 

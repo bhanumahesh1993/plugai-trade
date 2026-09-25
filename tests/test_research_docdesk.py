@@ -120,8 +120,7 @@ def test_pasted_text_is_fenced_untrusted():
 
 def test_library_add_folder_counts_and_ask(tmp_path):
     (tmp_path / "note-2025-03-14.txt").write_text(
-        "Felt bored before the open and forced a trade at 09:17. Lesson: wait for the setup."
-    )
+        "Felt bored before the open and forced a trade at 09:17. Lesson: wait for the setup.", encoding="utf-8")
     (tmp_path / "concall.pdf").write_bytes(docdesk.make_pdf(samples.KAVERI_Q1_FY27))
     (tmp_path / "scan.pdf").write_bytes(docdesk.make_pdf(["", ""]))
     lib = docdesk.Library(tmp_path / "idx")

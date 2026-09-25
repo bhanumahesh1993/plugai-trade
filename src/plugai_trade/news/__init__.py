@@ -87,7 +87,7 @@ def _read_jsonl(name: str) -> list[dict[str, Any]]:
     f = _store_file(name)
     if not f.exists():
         return []
-    return [json.loads(line) for line in f.read_text().splitlines() if line.strip()]
+    return [json.loads(line) for line in f.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def _append_jsonl(name: str, rows: list[dict[str, Any]]) -> None:

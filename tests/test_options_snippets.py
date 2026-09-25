@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-SNIPPETS = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+SNIPPETS = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
 
 
 @pytest.mark.parametrize("idx", [12, 13])

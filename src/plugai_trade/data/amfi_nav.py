@@ -72,7 +72,7 @@ def parse(text: str) -> pl.DataFrame:
 def latest() -> pl.DataFrame:
     """Today's NAVAll.txt (raw copy kept in ``<lab>/raw/amfi``)."""
     text = get(NAV_ALL, headers=HEADERS).text
-    raw_path("amfi", f"NAVAll_{date.today():%Y%m%d}.txt").write_text(text)
+    raw_path("amfi", f"NAVAll_{date.today():%Y%m%d}.txt").write_text(text, encoding="utf-8")
     return parse(text)
 
 
@@ -82,11 +82,11 @@ def history(start: date, end: date) -> pl.DataFrame:
     for lo, hi in windows(start, end, WINDOW_DAYS):
         raw = raw_path("amfi", f"history_{lo:%Y%m%d}_{hi:%Y%m%d}.txt")
         if raw.exists() and hi < date.today():
-            text = raw.read_text()  # past windows never change
+            text = raw.read_text(encoding="utf-8")  # past windows never change
         else:
             params = {"tp": "1", "frmdt": f"{lo:%d-%b-%Y}", "todt": f"{hi:%d-%b-%Y}"}
             text = get(HISTORY, params=params, headers=HEADERS, min_interval=1.0).text
-            raw.write_text(text)
+            raw.write_text(text, encoding="utf-8")
         frames.append(parse(text))
     return pl.concat(frames) if frames else parse("")
 

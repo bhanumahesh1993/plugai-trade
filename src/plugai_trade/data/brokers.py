@@ -107,7 +107,7 @@ def _angel(symbol: str, market: str, start: date, end: date, interval: str = "1d
             raise RuntimeError(f"Angel One: {reply.get('message', 'error')} (log in again if "
                                "the daily session expired)")
         rows.extend(reply.get("data") or [])
-    return epoch_frame(rows, intraday=interval != "1d", ts_is_text=True)
+    return epoch_frame(rows, intraday=interval != "1d", ts_is_text=True, encoding="utf-8", errors="replace")
 
 
 # ------------------------------------------------------------------ ICICI Breeze

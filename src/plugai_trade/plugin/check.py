@@ -97,8 +97,11 @@ class CheckReport:
 
 def safe_env(pythonpath: Path) -> dict[str, str]:
     """Environment for a plugin process: no keys, no tokens, offline flags kept."""
-    env = {k: os.environ[k] for k in _SAFE_ENV if k in os.environ}
-    env.update(PYTHONPATH=str(pythonpath), PYTHONDONTWRITEBYTECODE="1", PLUGAI_TRADE_PLUGIN="1")
+    secret = re.compile(r"KEY|TOKEN|SECRET|PASSW|PASSPHRASE|CREDENTIAL|AUTH|COOKIE|SESSION", re.I)
+    # Keep the OS basics (Windows needs SYSTEMROOT etc. for native libraries); drop secrets.
+    env = {k: v for k, v in os.environ.items() if not secret.search(k)}
+    env.update(PYTHONPATH=str(pythonpath), PYTHONDONTWRITEBYTECODE="1", PLUGAI_TRADE_PLUGIN="1",
+               PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
     return env
 
 
@@ -107,7 +110,7 @@ def _manifest(root: Path) -> tuple[CheckItem, dict]:
     if not f.exists():
         return CheckItem("Manifest", False, "missing plugin.toml ✗"), {}
     try:
-        m = tomllib.loads(f.read_text())
+        m = tomllib.loads(f.read_text(encoding="utf-8"))
     except tomllib.TOMLDecodeError as exc:
         return CheckItem("Manifest", False, f"cannot read plugin.toml ({exc}) ✗"), {}
     problems = [f"no {k}" for k in REQUIRED if k not in m]
@@ -124,7 +127,7 @@ def _manifest(root: Path) -> tuple[CheckItem, dict]:
     code = root / file
     if not (file and func and code.exists()):
         problems.append(f"entry {entry!r} not found")
-    elif not re.search(rf"^def {re.escape(func)}\s*\(", code.read_text(), re.MULTILINE):
+    elif not re.search(rf"^def {re.escape(func)}\s*\(", code.read_text(encoding="utf-8"), re.MULTILINE):
         problems.append(f"function {func} not defined in {file}")
     if problems:
         return CheckItem("Manifest", False, "; ".join(problems) + " ✗"), m
@@ -138,7 +141,7 @@ def _pytest(root: Path) -> CheckItem:
         proc = subprocess.run(
             [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "--rootdir",
              str(root), "-o", "addopts=", "tests"],
-            cwd=root, env=safe_env(root.parent), capture_output=True, text=True, timeout=180,
+            cwd=root, env=safe_env(root.parent), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180,
             check=False)
     except subprocess.TimeoutExpired:
         return CheckItem("Tests (pytest)", False, "timed out after 180 s ✗")

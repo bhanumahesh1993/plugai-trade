@@ -176,7 +176,7 @@ def load_file(path: str | Path, market: str = "IN") -> Document:
         return load_pdf(p, market=market)
     return Document(
         name=p.stem,
-        pages=split_pasted(p.read_text(errors="replace")),
+        pages=split_pasted(p.read_text(errors="replace", encoding="utf-8")),
         source=str(p),
         market=market,
         kind="text",

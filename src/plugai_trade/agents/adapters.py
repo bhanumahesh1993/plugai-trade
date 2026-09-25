@@ -109,11 +109,11 @@ def install(name: str) -> str:
     """Fetch the official repository at the pinned tag into its own venv. Needs internet."""
     plan = install_plan(name)
     for cmd in plan.commands:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=900, check=False)
+        proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900, check=False)
         if proc.returncode != 0:
             return f"Install stopped at `{' '.join(cmd[:3])}`: {proc.stderr.strip()[-400:]}"
-    (plan.folder / "runner.py").write_text(RUNNER)
-    (plan.folder / "INSTALLED.json").write_text(json.dumps({"repo": plan.repo, "tag": plan.tag}))
+    (plan.folder / "runner.py").write_text(RUNNER, encoding="utf-8")
+    (plan.folder / "INSTALLED.json").write_text(json.dumps({"repo": plan.repo, "tag": plan.tag}), encoding="utf-8")
     store().audit("agent_install", {"name": name, "repo": plan.repo, "tag": plan.tag})
     return f"Installed {ADAPTERS[name]['title']} {plan.tag} from GitHub in {plan.folder}."
 
@@ -126,7 +126,7 @@ def run_adapter(name: str, packet: dict[str, Any], timeout: int) -> dict[str, An
     runner = adapter_dir(name) / "runner.py"
     try:
         proc = subprocess.run([str(venv_python(name)), str(runner)], input=json.dumps(body),
-                              capture_output=True, text=True, timeout=timeout,
+                              capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout,
                               env=safe_env(adapter_dir(name)), check=False)
         return json.loads(proc.stdout.strip().splitlines()[-1])
     except (OSError, subprocess.SubprocessError, ValueError, IndexError) as exc:

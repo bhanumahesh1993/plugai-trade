@@ -39,7 +39,7 @@ def rules() -> dict[str, Any]:
     ref = reference.lookup("india.ipo")
     if ref:
         return ref
-    return yaml.safe_load(resources.files(__package__).joinpath("rules.yaml").read_text())
+    return yaml.safe_load(resources.files(__package__).joinpath("rules.yaml").read_text(encoding="utf-8"))
 
 
 @dataclass

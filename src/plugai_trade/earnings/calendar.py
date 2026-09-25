@@ -53,7 +53,7 @@ class Event:
 @lru_cache(maxsize=1)
 def rules() -> dict[str, Any]:
     """The sample calendar rules shipped with the lab."""
-    text = resources.files(__package__).joinpath("lab_calendar.yaml").read_text()
+    text = resources.files(__package__).joinpath("lab_calendar.yaml").read_text(encoding="utf-8")
     return yaml.safe_load(text)
 
 

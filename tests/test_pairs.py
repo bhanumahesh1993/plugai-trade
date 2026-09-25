@@ -12,7 +12,7 @@ from plugai_trade.pairs import sample
 
 
 def test_snippet_14_runs_as_printed():
-    snippets = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+    snippets = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
     code = next(s["code"] for s in snippets if s["file"] == "ch26.typ" and s["lang"] == "python")
     ns: dict = {}
     exec(compile("\n".join(line[2:] if line.startswith("  ") else line

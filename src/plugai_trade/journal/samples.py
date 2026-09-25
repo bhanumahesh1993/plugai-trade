@@ -245,5 +245,5 @@ def to_tradebook(trades: pl.DataFrame, broker: str = "Zerodha") -> str:
 def write_tradebook(trades: pl.DataFrame, path: str | Path, broker: str = "Zerodha") -> Path:
     """Save ``to_tradebook`` output to a file and return its path."""
     p = Path(path)
-    p.write_text(to_tradebook(trades, broker))
+    p.write_text(to_tradebook(trades, broker), encoding="utf-8")
     return p

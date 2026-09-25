@@ -103,14 +103,14 @@ def load() -> dict[str, Any]:
     if not f.exists():
         return copy.deepcopy(DEFAULTS)
     try:
-        return _merge(DEFAULTS, json.loads(f.read_text()))
+        return _merge(DEFAULTS, json.loads(f.read_text(encoding="utf-8")))
     except json.JSONDecodeError:
         return copy.deepcopy(DEFAULTS)
 
 
 def save(settings: dict[str, Any]) -> None:
     settings["education_lag_days"] = max(30, int(settings.get("education_lag_days", 90)))
-    path("settings.json").write_text(json.dumps(settings, indent=2, sort_keys=True))
+    path("settings.json").write_text(json.dumps(settings, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def get(dotted: str, default: Any = None) -> Any:

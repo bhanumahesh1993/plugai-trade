@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-SNIPS = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+SNIPS = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
 PY = [(i, s) for i, s in enumerate(SNIPS) if s["lang"] == "python"]
 
 # [16] is the book's deliberately broken example (key in code, order request) — it must NOT run.

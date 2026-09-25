@@ -160,7 +160,7 @@ def folder(name: str | Path) -> Path:
 
 def manifest(name: str | Path) -> dict[str, Any]:
     """The parsed ``plugin.toml`` (raises FileNotFoundError / tomllib.TOMLDecodeError)."""
-    return tomllib.loads((folder(name) / "plugin.toml").read_text())
+    return tomllib.loads((folder(name) / "plugin.toml").read_text(encoding="utf-8"))
 
 
 def installed() -> list[str]:
@@ -180,11 +180,11 @@ def new(name: str, kind: str = "report") -> str:
     (root / "tests").mkdir(parents=True, exist_ok=True)
     title = name.replace("_", " ").capitalize()
     pad = " " * max(1, 21 - len(kind))
-    (root / "plugin.toml").write_text(MANIFEST.format(name=name, kind=kind, pad=pad))
-    (root / "plugin.py").write_text(CODE[kind].format(name=name, title=title))
-    (root / "tests" / "test_plugin.py").write_text(TESTS[kind].format(name=name))
-    (root / "AGENTS.md").write_text(AGENTS_MD.format(name=name))
-    (root / ".gitignore").write_text(GITIGNORE)
+    (root / "plugin.toml").write_text(MANIFEST.format(name=name, kind=kind, pad=pad), encoding="utf-8")
+    (root / "plugin.py").write_text(CODE[kind].format(name=name, title=title), encoding="utf-8")
+    (root / "tests" / "test_plugin.py").write_text(TESTS[kind].format(name=name), encoding="utf-8")
+    (root / "AGENTS.md").write_text(AGENTS_MD.format(name=name), encoding="utf-8")
+    (root / ".gitignore").write_text(GITIGNORE, encoding="utf-8")
     store().audit("plugin_new", {"name": name, "kind": kind})
     return (f"Created {kind} plugin {name} in {root}: plugin.toml, plugin.py, tests/, AGENTS.md. "
             f"Next: plugai-trade plugin test {name}")

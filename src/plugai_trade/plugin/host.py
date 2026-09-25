@@ -60,7 +60,7 @@ class SignalStrategy:
 
 def _load(root: Path) -> tuple[Any, dict[str, Any]]:
     import tomllib
-    man = tomllib.loads((root / "plugin.toml").read_text())
+    man = tomllib.loads((root / "plugin.toml").read_text(encoding="utf-8"))
     file, _, func = str(man["entry"]).partition(":")
     sys.path.insert(0, str(root.parent))
     spec = importlib.util.spec_from_file_location(f"{root.name}.plugin", root / file)
@@ -108,7 +108,7 @@ def run(name: str, symbol: str = "NIFTY", market: str = "IN", start: str | None 
         proc = subprocess.run(
             [sys.executable, "-m", "plugai_trade.plugin.host", str(root), str(src), str(dst),
              json.dumps(params or {})],
-            env=safe_env(root.parent), capture_output=True, text=True, timeout=timeout,
+            env=safe_env(root.parent), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout,
             check=False)
         if proc.returncode != 0:
             raise RuntimeError(f"{root.name} failed in its process:\n{proc.stderr[-1500:]}")

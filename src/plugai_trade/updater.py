@@ -47,7 +47,7 @@ def run(echo: Callable[[str], None] = print, url: str = RAW) -> list[tuple[str, 
     if not changes:
         echo(f"Reference tables are current (as of {reference.as_of()}).")
         return []
-    config.path("reference", "tables.yaml").write_text(yaml.safe_dump(latest, sort_keys=False))
+    config.path("reference", "tables.yaml").write_text(yaml.safe_dump(latest, sort_keys=False), encoding="utf-8")
     reference.reload()
     echo(f"Updated reference tables: {len(changes)} change(s), now as of {reference.as_of()}")
     for key, old, new in changes:

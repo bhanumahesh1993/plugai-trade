@@ -101,11 +101,11 @@ def free_ram_gb() -> float | None:
     """Memory available right now (best effort): Linux MemAvailable, macOS vm_stat."""
     meminfo = Path("/proc/meminfo")
     if meminfo.exists():
-        m = re.search(r"MemAvailable:\s+(\d+) kB", meminfo.read_text())
+        m = re.search(r"MemAvailable:\s+(\d+) kB", meminfo.read_text(encoding="utf-8"))
         return int(m.group(1)) / 1024**2 if m else None
     if sys.platform == "darwin":
         try:
-            out = subprocess.run(["vm_stat"], capture_output=True, text=True, timeout=2,
+            out = subprocess.run(["vm_stat"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=2,
                                  check=False).stdout
         except (OSError, subprocess.SubprocessError):
             return None

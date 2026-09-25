@@ -13,7 +13,7 @@ from plugai_trade import plugin
 
 
 def _snippet(i: int) -> str:
-    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
     return textwrap.dedent(snips[i]["code"])
 
 
@@ -21,8 +21,8 @@ def _gap_report() -> Path:
     """Snippets [15] + [17]: the gap report and its hand-checked test."""
     plugin.new("gap_report", "report")
     root = plugin.folder("gap_report")
-    (root / "plugin.py").write_text(_snippet(15))
-    (root / "tests" / "test_plugin.py").write_text(_snippet(17))
+    (root / "plugin.py").write_text(_snippet(15), encoding="utf-8")
+    (root / "tests" / "test_plugin.py").write_text(_snippet(17), encoding="utf-8")
     return root
 
 
@@ -35,7 +35,7 @@ def test_new_creates_the_book_layout():
     man = plugin.manifest("gap_report")
     assert man == {"name": "gap_report", "kind": "report", "markets": ["IN", "US"],
                    "entry": "plugin.py:gap_report", "network": [], "licence": "Apache-2.0"}
-    assert "Never write code that places" in (root / "AGENTS.md").read_text()
+    assert "Never write code that places" in (root / "AGENTS.md").read_text(encoding="utf-8")
     assert "already exists" in plugin.new("gap_report", "report")
     with pytest.raises(ValueError):
         plugin.new("Bad Name!", "report")
@@ -47,7 +47,7 @@ def test_every_template_passes_its_own_check(kind):
     rep = plugin.check(f"t_{kind}")
     assert rep.passed, rep.text()
     if kind == "strategy":
-        assert "scramble" in (plugin.folder(f"t_{kind}") / "tests" / "test_plugin.py").read_text()
+        assert "scramble" in (plugin.folder(f"t_{kind}") / "tests" / "test_plugin.py").read_text(encoding="utf-8")
 
 
 def test_book_gap_report_passes_in_the_book_format():
@@ -66,8 +66,8 @@ def test_book_gap_report_passes_in_the_book_format():
 
 def test_book_test_catches_todays_close():
     root = _gap_report()
-    code = (root / "plugin.py").read_text().replace('pl.col("close").shift(1)', 'pl.col("close")')
-    (root / "plugin.py").write_text(code)
+    code = (root / "plugin.py").read_text(encoding="utf-8").replace('pl.col("close").shift(1)', 'pl.col("close")')
+    (root / "plugin.py").write_text(code, encoding="utf-8")
     rep = plugin.check("gap_report")
     assert not rep.passed and not rep.item("Tests (pytest)").ok
     assert "1 failed" in rep.item("Tests (pytest)").value
@@ -75,8 +75,8 @@ def test_book_test_catches_todays_close():
 
 def test_negative_shift_fails_the_look_ahead_scan():
     root = _gap_report()
-    code = (root / "plugin.py").read_text().replace(".shift(1)", ".shift(-1)")
-    (root / "plugin.py").write_text(code)
+    code = (root / "plugin.py").read_text(encoding="utf-8").replace(".shift(1)", ".shift(-1)")
+    (root / "plugin.py").write_text(code, encoding="utf-8")
     rep = plugin.check("gap_report")
     assert not rep.item("Look-ahead scan").ok and not rep.passed
 
@@ -84,7 +84,7 @@ def test_negative_shift_fails_the_look_ahead_scan():
 def test_leaky_draft_is_blocked_on_sight():
     """Snippet [16]: key in code, today's close, an order request — never run."""
     plugin.new("gapdown_test", "strategy")
-    (plugin.folder("gapdown_test") / "plugin.py").write_text(_snippet(16))
+    (plugin.folder("gapdown_test") / "plugin.py").write_text(_snippet(16), encoding="utf-8")
     rep = plugin.check("gapdown_test")
     assert not rep.passed
     for name in ("Order code", "Keys in code", "Look-ahead scan", "Packages", "Network"):
@@ -97,15 +97,15 @@ def test_leaky_draft_is_blocked_on_sight():
 
 def test_gpl_licence_and_skipped_tests_fail():
     root = _gap_report()
-    man = (root / "plugin.toml").read_text().replace("Apache-2.0", "AGPL-3.0")
-    (root / "plugin.toml").write_text(man)
+    man = (root / "plugin.toml").read_text(encoding="utf-8").replace("Apache-2.0", "AGPL-3.0")
+    (root / "plugin.toml").write_text(man, encoding="utf-8")
     rep = plugin.check("gap_report")
     assert not rep.item("Licence").ok and "Licence" in rep.text()
     root2 = _gap_report()
     t = root2 / "tests" / "test_plugin.py"
-    t.write_text("import pytest\n" + t.read_text().replace(
+    t.write_text("import pytest\n" + t.read_text(encoding="utf-8").replace(
         "def test_gap", "@pytest.mark.skip\ndef test_gap"))
-    (root2 / "plugin.toml").write_text(man.replace("AGPL-3.0", "Apache-2.0"))
+    (root2 / "plugin.toml").write_text(man.replace("AGPL-3.0", "Apache-2.0"), encoding="utf-8")
     assert not plugin.check("gap_report").item("Tests (pytest)").ok
 
 

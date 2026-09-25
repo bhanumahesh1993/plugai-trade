@@ -19,8 +19,8 @@ from .. import config
 def tables() -> dict[str, Any]:
     local = config.path("reference", "tables.yaml")
     if local.exists():
-        return yaml.safe_load(local.read_text())
-    return yaml.safe_load(resources.files(__package__).joinpath("tables.yaml").read_text())
+        return yaml.safe_load(local.read_text(encoding="utf-8"))
+    return yaml.safe_load(resources.files(__package__).joinpath("tables.yaml").read_text(encoding="utf-8"))
 
 
 def reload() -> dict[str, Any]:

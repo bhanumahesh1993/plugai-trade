@@ -116,7 +116,7 @@ def test_vol_scenarios_and_scored_history(bars):
 
 
 def test_book_snippet_22_runs_offline(capsys):
-    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
     code = textwrap.dedent(snips[22]["code"])
     assert "ml.dataset" in code
     exec(compile(code, "snippet-22", "exec"), {})  # noqa: S102 - book snippet

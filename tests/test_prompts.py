@@ -28,7 +28,7 @@ def test_forty_prompts_with_groups_and_chips():
 
 @pytest.mark.skipif(not APPB.exists(), reason="manuscript not present")
 def test_titles_match_appendix_b():
-    titles = re.findall(r"#prompt\(title: \[(.+?)\]", APPB.read_text())
+    titles = re.findall(r"#prompt\(title: \[(.+?)\]", APPB.read_text(encoding="utf-8"))
     assert [p.title for p in prompts.BOOK] == titles
 
 

@@ -120,7 +120,7 @@ def test_book_snippet_9_runs_offline(capsys):
     from plugai_trade import config
 
     config.set_value("ai.ollama_host", "http://127.0.0.1:9")
-    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text())
+    snips = json.loads((Path(__file__).parent / "book_snippets.json").read_text(encoding="utf-8"))
     code = textwrap.dedent(snips[9]["code"])
     assert "ai.explain(bars.tail(60))" in code
     exec(compile(code, "snippet-9", "exec"), {})  # noqa: S102 - book snippet, run as printed

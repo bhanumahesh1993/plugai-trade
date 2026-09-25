@@ -45,14 +45,13 @@ class Library:
         self.root = root or config.path("library")
         self.root.mkdir(parents=True, exist_ok=True)
         self.file = self.root / "index.json"
-        data = json.loads(self.file.read_text()) if self.file.exists() else {}
+        data = json.loads(self.file.read_text(encoding="utf-8")) if self.file.exists() else {}
         self.docs: dict[str, dict] = data.get("docs", {})
         self.chunks: list[Chunk] = [Chunk(**c) for c in data.get("chunks", [])]
 
     def save(self) -> None:
         self.file.write_text(
-            json.dumps({"docs": self.docs, "chunks": [asdict(c) for c in self.chunks]})
-        )
+            json.dumps({"docs": self.docs, "chunks": [asdict(c) for c in self.chunks]}), encoding="utf-8")
 
     def counts(self) -> dict[str, int]:
         """Documents, chunks and scanned files in the index."""

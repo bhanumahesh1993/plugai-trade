@@ -339,6 +339,6 @@ def tables_fresh(days: int = 31) -> tuple[bool, str]:
 
 def keys_masked() -> tuple[bool, str]:
     from .. import keys
-    text = config.path("settings.json").read_text() if config.path("settings.json").exists() else ""
+    text = config.path("settings.json").read_text(encoding="utf-8") if config.path("settings.json").exists() else ""
     leaked = [n for n in keys.listed() if (v := keys.get_key(n)) and len(v) > 6 and v in text]
     return not leaked, "keys only in the keychain" if not leaked else "a key is in settings.json"

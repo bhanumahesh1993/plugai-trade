@@ -121,10 +121,10 @@ def test_no_real_order_code_in_my_modules():
         p = root / rel
         files = p.rglob("*.py") if p.is_dir() else [p]
         for f in files:
-            text = f.read_text()
+            text = f.read_text(encoding="utf-8")
             assert not re.search(r"https?://[^\"']*(kite|upstox|alpaca|dhan|fyers|angel)[^\"']*/order",
                                  text, re.IGNORECASE), f
-    assert "httpx" not in "".join(f.read_text() for f in (root / "paper").rglob("*.py"))
+    assert "httpx" not in "".join(f.read_text(encoding="utf-8") for f in (root / "paper").rglob("*.py"))
 
 
 def test_shadow_backtest_runs_when_backtest_module_present():

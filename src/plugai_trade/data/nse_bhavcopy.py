@@ -51,7 +51,7 @@ def holidays(source: str = "nse") -> set[date]:
     days = {date.fromisoformat(str(d)) for d in (reference.lookup("india.holidays", []) or [])}
     f = _learned_file(source)
     if f.exists():
-        days |= {date.fromisoformat(x) for x in f.read_text().split() if x}
+        days |= {date.fromisoformat(x) for x in f.read_text(encoding="utf-8").split() if x}
     return days
 
 
@@ -60,9 +60,9 @@ def remember_no_file(day: date, source: str = "nse") -> None:
     if day >= date.today():
         return  # today's file may simply not be published yet
     f = _learned_file(source)
-    known = set(f.read_text().split()) if f.exists() else set()
+    known = set(f.read_text(encoding="utf-8").split()) if f.exists() else set()
     known.add(day.isoformat())
-    f.write_text("\n".join(sorted(known)))
+    f.write_text("\n".join(sorted(known)), encoding="utf-8")
 
 
 def trading_days(start: date, end: date, source: str = "nse") -> list[date]:

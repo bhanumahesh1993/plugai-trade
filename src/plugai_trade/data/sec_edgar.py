@@ -49,7 +49,7 @@ def cik(ticker: str) -> str:
     if ticker.isdigit():
         return ticker.zfill(10)
     cached = raw_path("sec", f"company_tickers_{date.today():%Y%m%d}.json")
-    table = (json.loads(cached.read_text()) if cached.exists()
+    table = (json.loads(cached.read_text(encoding="utf-8")) if cached.exists()
              else _json(TICKERS_URL, cached.name))
     for row in table.values():
         if str(row.get("ticker", "")).upper() == ticker.upper():
