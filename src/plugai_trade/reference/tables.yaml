@@ -1,0 +1,70 @@
+# Dated reference tables — the single source of truth for rates, lots, sessions.
+# Every row: value, effective_from, (effective_to), source. `plugai-trade update`
+# replaces this file with the latest published version. As of September 2026.
+# † = confirm before relying on it (see the book's Appendix A).
+as_of: "2026-09-24"
+
+india:
+  sessions:
+    cash: {open: "09:15", close: "15:30", pre_open: "09:00-09:15", tz: "Asia/Kolkata", settlement: "T+1"}
+    mcx: {open: "09:00", close: "23:30", close_us_winter: "23:55", tz: "Asia/Kolkata"}
+  contracts:
+    NIFTY:      {lot: 65,  expiry: "Tuesday (weekly); last Tuesday (monthly)", exchange: NSE, settlement: cash, effective_from: "2026-01-01", source: "NSE lot revision, Jan 2026 series"}
+    BANKNIFTY:  {lot: 30,  expiry: "last Tuesday (monthly)", exchange: NSE, settlement: cash, effective_from: "2026-01-01", source: "NSE lot revision"}
+    FINNIFTY:   {lot: 60,  expiry: "last Tuesday (monthly)", exchange: NSE, settlement: cash, effective_from: "2026-01-01", source: "NSE lot revision"}
+    MIDCPNIFTY: {lot: 120, expiry: "last Tuesday (monthly)", exchange: NSE, settlement: cash, effective_from: "2026-01-01", source: "NSE lot revision"}
+    SENSEX:     {lot: null, expiry: "Thursday (weekly)", exchange: BSE, settlement: cash, note: "Exchange-set; check the Contract Table", source: "BSE"}
+    USDINR:     {lot_usd: 1000, expiry: "monthly", exchange: NSE, settlement: cash, exposure_required: true, source: "NSE / RBI"}
+  min_index_derivative_contract_inr: 1500000
+  charges:  # per side unless stated; percentages as fractions
+    brokerage_per_order: 20.0
+    stt:
+      delivery: {buy: 0.001, sell: 0.001}
+      intraday: {buy: 0.0, sell: 0.00025}
+      futures:  {buy: 0.0, sell: 0.0005, effective_from: "2026-04-01", previous: 0.0002}
+      options_premium: {buy: 0.0, sell: 0.0015, effective_from: "2026-04-01", previous: 0.001}
+      options_exercised: 0.0015
+    exchange_txn: {equity: 0.0000297, futures: 0.0000173, options_premium: 0.0003503}   # † options
+    sebi_per_crore: 10.0
+    stamp_buy: {delivery: 0.00015, intraday: 0.00003, futures: 0.00002, options: 0.00003}  # † options
+    gst: 0.18
+    dp_charge_per_scrip_sell: 15.93  # broker-specific
+  tax:
+    stcg_listed_equity: 0.20
+    ltcg_listed_equity: 0.125
+    ltcg_exemption_inr: 125000
+    vda_rate: 0.30
+    vda_tds: 0.01
+    audit_threshold_digital_inr: 100000000
+    carry_forward_years: {speculative: 4, non_speculative: 8, capital: 8}
+    advance_tax: [["06-15", 0.15], ["09-15", 0.45], ["12-15", 0.75], ["03-15", 1.00]]
+    act: "Income-tax Act, 2025 (from 2026-04-01); FY 2025-26 returns use 1961 Act numbers"
+  rules:
+    sebi_algo_framework: {applicable_from: "2026-04-01", note: "Broker is principal; Algo IDs; static IP. PlugAI-Trade places no orders."}
+    education_lag_house_days: 90
+
+us:
+  sessions:
+    cash: {open: "09:30", close: "16:00", tz: "America/New_York", settlement: "T+1"}
+    cme_globex: {note: "Sun–Fri 17:00–16:00 CT with a daily 1-hour break †"}
+  contracts:
+    SPY: {multiplier: 100, style: American, settlement: physical, sec_1256: false}
+    QQQ: {multiplier: 100, style: American, settlement: physical, sec_1256: false}
+    SPX: {multiplier: 100, style: European, settlement: cash, sec_1256: true}
+    NDX: {multiplier: 100, style: European, settlement: cash, sec_1256: true}
+    MES: {multiplier: 5, expiry: "quarterly (Mar/Jun/Sep/Dec) †", sec_1256: true}
+    MNQ: {multiplier: 2, expiry: "quarterly †", sec_1256: true}
+  charges:
+    commission_per_trade: 0.0
+    options_contract_fee: 0.65   # typical broker fee, varies
+    regulatory_per_dollar_sold: 0.00003   # SEC §31 + FINRA TAF, modelled (†)
+  tax:
+    short_term: "ordinary income rates (held ≤ 1 year)"
+    long_term: [0.0, 0.15, 0.20]
+    niit: 0.038
+    wash_sale_days: 30
+    wash_sale_covers_crypto: false
+    loss_deduction_cap: 3000
+    sec_1256_split: [0.60, 0.40]
+  rules:
+    pdt_removed: {approved: "2026-04-14", effective: "2026-06-04", broker_phase_in_until: "2027-10-20"}
