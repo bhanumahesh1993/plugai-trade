@@ -153,7 +153,8 @@ def test_ml_lab_flow():
 
 # ------------------------------------------------------------------ Agents
 def _wait(rid):
-    for _ in range(200):
+    deadline = time.monotonic() + 60  # Windows CI runners are slow to spawn the run thread
+    while time.monotonic() < deadline:
         r = ok(c.get(f"/api/automate/agents/runs/{rid}"))
         if r["status"] != "running":
             return r
