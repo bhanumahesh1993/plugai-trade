@@ -2,8 +2,12 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 jobs:
   pypi:
+    # Enable after adding this repo as a Trusted Publisher on pypi.org:
+    #   gh variable set PYPI_PUBLISH --body true
+    if: vars.PYPI_PUBLISH == 'true'
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
