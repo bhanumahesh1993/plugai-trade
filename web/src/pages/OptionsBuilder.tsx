@@ -49,8 +49,11 @@ const PRESETS: Record<Market, Record<string, LegIn[]>> = {
 };
 
 const TONE: Record<string, "bull" | "bear" | "indigo" | undefined> = {
-  "Max loss": "bear", "Theta/day": "bear", "Credit": "bull", "Max profit": "bull", "Required move": "indigo",
+  "Max loss": "bear", "Credit": "bull", "Max profit": "bull", "Required move": "indigo",
 };
+/** Theta is a cost when it is negative (buyers) and income when positive (sellers). */
+const toneOf = (k: string, v: string) =>
+  k === "Theta/day" ? (v.trim().startsWith("−") || v.trim().startsWith("-") ? "bear" : "bull") : TONE[k];
 
 function LegRow({ leg, onChange, onRemove, cur }: { leg: LegIn; onChange: (l: LegIn) => void; onRemove: () => void; cur: string }) {
   const seg = (on: boolean, tone: "bull" | "bear" | "ink") => cn("h-7 px-2.5 text-[13px] font-medium",
@@ -136,7 +139,7 @@ export default function OptionsBuilder() {
           <h2 className="text-[14px] font-semibold">What you're paying for</h2>
           <div className="grid grid-cols-2 gap-2.5">
             {q && Object.entries(q.tiles).map(([k, v], i) => (
-              <FactTile key={k} label={k} value={v} tone={TONE[k]} big={i === 0} />
+              <FactTile key={k} label={k} value={v} tone={toneOf(k, v)} big={i === 0} />
             ))}
           </div>
           <div className="mt-2">
