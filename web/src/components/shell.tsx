@@ -5,7 +5,7 @@ import { get, post, type Market, type Status } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { MarketSwitch } from "./ui";
 import { useTheme } from "./theme";
-import { SCREENS, SECTIONS } from "@/screens";
+import { SCREENS, SECTIONS, isReady } from "@/screens";
 
 export function useMarket(): [Market, (m: Market) => void] {
   const qc = useQueryClient();
@@ -37,7 +37,7 @@ function Sidebar() {
               )}
             >
               {s.title}
-              {s.ready && <span className="h-1.5 w-1.5 rounded-full bg-indigo" aria-label="new design" />}
+              {isReady(s.slug) && <span className="h-1.5 w-1.5 rounded-full bg-indigo" aria-label="new design" />}
             </NavLink>
           ))}
         </div>

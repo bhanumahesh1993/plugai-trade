@@ -9,15 +9,15 @@ export const SCREENS: Screen[] = [
   { section: "Research", title: "Earnings Desk", slug: "earnings" },
   { section: "Research", title: "IPO Dashboard", slug: "ipo" },
   { section: "Strategy", title: "Strategy Builder", slug: "strategy-builder" },
-  { section: "Strategy", title: "Backtest Report", slug: "backtest-report", ready: true },
+  { section: "Strategy", title: "Backtest Report", slug: "backtest-report" },
   { section: "Strategy", title: "Trend Lab", slug: "trend-lab" },
   { section: "Strategy", title: "Pairs Lab", slug: "pairs-lab" },
   { section: "Plan & Risk", title: "Trade Plan", slug: "trade-plan" },
   { section: "Plan & Risk", title: "Position Sizer", slug: "position-sizer" },
   { section: "Plan & Risk", title: "Rule Card", slug: "rule-card" },
-  { section: "Paper Trading", title: "Paper Desk", slug: "paper-desk", ready: true },
+  { section: "Paper Trading", title: "Paper Desk", slug: "paper-desk" },
   { section: "Paper Trading", title: "Alerts", slug: "alerts" },
-  { section: "Derivatives", title: "Options Strategy Builder", slug: "options", ready: true },
+  { section: "Derivatives", title: "Options Strategy Builder", slug: "options" },
   { section: "Derivatives", title: "Futures & Roll", slug: "futures" },
   { section: "Derivatives", title: "Contract Table", slug: "contract-table" },
   { section: "Portfolio", title: "Portfolio Reviewer", slug: "portfolio" },
@@ -42,4 +42,7 @@ export const SCREENS: Screen[] = [
   { section: "Settings", title: "Security", slug: "security" },
   { section: "Settings", title: "Workspace", slug: "workspace" },
 ];
+// Screens with a file in pages/screens/ are the new design.
+const built = import.meta.glob("./pages/screens/*.tsx");
+export const isReady = (slug: string) => `./pages/screens/${slug}.tsx` in built;
 export const SECTIONS = [...new Set(SCREENS.map((s) => s.section))];

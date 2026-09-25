@@ -8,5 +8,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": path.resolve(__dirname, "src") } },
   build: { outDir: "../src/plugai_trade/web_dist", emptyOutDir: true, chunkSizeWarningLimit: 1600 },
-  server: { port: 5173, proxy: { "/api": "http://localhost:8501" } },
+  server: { port: Number(process.env.WEB_PORT ?? 5173), strictPort: true,
+    proxy: { "/api": process.env.PLUGAI_API ?? "http://localhost:8501" } },
 });
