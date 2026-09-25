@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/source-serif-4/400.css";
+@import "@fontsource/source-serif-4/400-italic.css";
+@import "@fontsource/source-serif-4/600.css";
+
+@custom-variant dark (&:where([data-theme="desk"], [data-theme="desk"] *));
+
+/* Book (light) is the default; Desk (dark) swaps the same tokens. See docs/DESIGN.md. */
+:root {
+  --bg: #f4f6fb;
+  --panel: #ffffff;
+  --panel-2: #f8fafd;
+  --line: #dce3ee;
+  --line-strong: #c5cfdf;
+  --ink: #1b2437;
+  --muted: #5b6780;
+  --indigo: #4f46e5;
+  --indigo-soft: #eef0fe;
+  --bull: #15803d;
+  --bull-soft: #e7f6ec;
+  --bear: #dc2626;
+  --bear-soft: #fdecec;
+  --saffron: #e8710a;
+  --navy: #1e3a8a;
+  --glow: rgba(79, 70, 229, 0.18);
+}
+
+[data-theme="desk"] {
+  --bg: #0f1a2b;
+  --panel: #152338;
+  --panel-2: #1a2a43;
+  --line: #233451;
+  --line-strong: #30456a;
+  --ink: #e7edf6;
+  --muted: #8fa0ba;
+  --indigo: #8b8fff;
+  --indigo-soft: #232a57;
+  --bull: #34c27a;
+  --bull-soft: #16352a;
+  --bear: #f2626a;
+  --bear-soft: #3a1f2a;
+  --saffron: #f59a3c;
+  --navy: #7aa2f7;
+  --glow: rgba(139, 143, 255, 0.28);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-indigo: var(--indigo);
+  --color-indigo-soft: var(--indigo-soft);
+  --color-bull: var(--bull);
+  --color-bull-soft: var(--bull-soft);
+  --color-bear: var(--bear);
+  --color-bear-soft: var(--bear-soft);
+  --color-saffron: var(--saffron);
+  --color-navy: var(--navy);
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+  --radius-chip: 4px;
+  --radius-tile: 8px;
+  --radius-panel: 12px;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1, "cv02" 1;
+}
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--indigo); outline-offset: 2px; border-radius: 4px; }
+::selection { background: var(--glow); }
+
+/* A tile lit by a citation chip in the explanation. */
+.tile-lit { box-shadow: 0 0 0 2px var(--indigo), 0 0 0 6px var(--glow); }
+@media (prefers-reduced-motion: no-preference) {
+  .tile { transition: box-shadow 160ms ease, transform 160ms ease; }
+  .tile-lit { transform: translateY(-1px); }
+  .drawer-enter { animation: drawer 220ms cubic-bezier(.2,.8,.2,1); }
+}
+@keyframes drawer { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+
+.scroll-thin { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }

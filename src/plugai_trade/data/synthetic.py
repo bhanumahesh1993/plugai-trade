@@ -8,6 +8,7 @@ but the series is random: it contains no real market information.
 from __future__ import annotations
 
 import hashlib
+from functools import lru_cache
 from datetime import date, timedelta
 
 import numpy as np
@@ -36,10 +37,15 @@ def _business_days(start: date, end: date) -> list[date]:
     return days
 
 
-def bars(symbol: str, start: date, end: date, vol: float = 0.011, drift: float = 0.0003) -> pl.DataFrame:
-    """Random-walk bars anchored at 2015-01-01 so any window is reproducible."""
+HORIZON_END = date(2035, 12, 31)
+
+
+@lru_cache(maxsize=64)
+def _master(symbol: str, vol: float, drift: float) -> pl.DataFrame:
+    """The whole 2015–2035 series for a symbol, generated once. Windows are slices of it,
+    so the same date has the same price whatever window you ask for."""
     anchor = date(2015, 1, 1)
-    all_days = _business_days(anchor, max(end, anchor))
+    all_days = _business_days(anchor, HORIZON_END)
     rng = np.random.default_rng(_seed(symbol))
     n = len(all_days)
     rets = rng.normal(drift, vol, n)
@@ -48,15 +54,20 @@ def bars(symbol: str, start: date, end: date, vol: float = 0.011, drift: float =
     rets = rets * regime
     level = LEVELS.get(symbol.upper(), 100.0 + _seed(symbol) % 900)
     path = np.cumsum(rets)
-    # Pin the series so it sits at `level` on 2026-01-01 (or the last bar before it).
-    pin = min(n - 1, sum(1 for d in all_days if d < date(2026, 1, 1)))
+    # Pin the series so it sits at `level` on the first business day of 2026.
+    pin = sum(1 for d in all_days if d < date(2026, 1, 1))
     close = level * np.exp(path - path[pin])
     open_ = np.concatenate([[close[0]], close[:-1]]) * (1 + rng.normal(0, vol / 4, n))
     hi = np.maximum(open_, close) * (1 + np.abs(rng.normal(0, vol / 2, n)))
     lo = np.minimum(open_, close) * (1 - np.abs(rng.normal(0, vol / 2, n)))
     volume = (rng.lognormal(13, 0.35, n) * regime).round()
-    df = pl.DataFrame({"date": all_days, "open": open_, "high": hi, "low": lo, "close": close,
-                       "volume": volume})
+    return pl.DataFrame({"date": all_days, "open": open_, "high": hi, "low": lo, "close": close,
+                         "volume": volume})
+
+
+def bars(symbol: str, start: date, end: date, vol: float = 0.011, drift: float = 0.0003) -> pl.DataFrame:
+    """Random-walk bars; any window is an exact slice of one fixed master series."""
+    df = _master(symbol.upper(), vol, drift)
     return df.filter((pl.col("date") >= start) & (pl.col("date") <= end))
 
 

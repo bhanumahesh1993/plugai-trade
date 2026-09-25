@@ -28,15 +28,25 @@ def _default(ctx: typer.Context) -> None:
 @app.command()
 def start(port: int = typer.Option(8501, help="Port for the dashboard."),
           page: str = typer.Option("", help="Open a specific page slug, e.g. lessons."),
-          headless: bool = typer.Option(False, help="Do not open a browser.")) -> None:
+          headless: bool = typer.Option(False, help="Do not open a browser."),
+          classic: bool = typer.Option(False, help="Open the classic (Streamlit) view.")) -> None:
     """Launch the dashboard at http://localhost:PORT."""
     env = dict(os.environ)
     if page:
         env["PLUGAI_TRADE_START_PAGE"] = page
-    cmd = [sys.executable, "-m", "streamlit", "run", str(MAIN), "--server.port", str(port),
-           "--browser.gatherUsageStats", "false", "--server.headless", str(headless).lower()]
-    typer.echo(f"PlugAI-Trade {__version__} → http://localhost:{port}   (Ctrl+C to stop)")
-    raise typer.Exit(subprocess.call(cmd, env=env))
+    url = f"http://localhost:{port}/{page}"
+    typer.echo(f"PlugAI-Trade {__version__} → {url}   (Ctrl+C to stop)")
+    if classic:
+        cmd = [sys.executable, "-m", "streamlit", "run", str(MAIN), "--server.port", str(port),
+               "--browser.gatherUsageStats", "false", "--server.headless", str(headless).lower()]
+        raise typer.Exit(subprocess.call(cmd, env=env))
+    if not headless:
+        import threading
+        import webbrowser
+        threading.Timer(1.2, lambda: webbrowser.open(url)).start()
+    import uvicorn
+    host = "0.0.0.0" if os.environ.get("PLUGAI_TRADE_HOME") == "/data" else "127.0.0.1"
+    uvicorn.run("plugai_trade.api:app", host=host, port=port, log_level="warning")
 
 
 @app.command()
